@@ -1,0 +1,27 @@
+(defun get-lowest (p)
+  (save-excursion (goto-char p)
+                  (let ((column (current-column)))
+                    (forward-line -1)
+                    (move-to-column column)
+                    (unless (bolp)
+                        (backward-char))
+                    (point))))
+
+(defun get-highest (p)
+  (save-excursion (goto-char p)
+                  (let ((column (current-column)))
+                    (forward-line 1)
+                    (move-to-column column)
+                    (unless (eolp)
+                      (forward-char))
+                    (point))))
+
+(with-current-buffer "input.txt"
+  (goto-char (point-min))
+  (cl-loop while (re-search-forward "[[:digit:]]+" nil t)
+           do (copy-rectangle-as-kill (get-lowest (match-beginning 0)) (get-highest (match-end 0)))
+           sum (let ((current (string-to-number (match-string-no-properties 0))))
+                (with-temp-buffer
+                  (yank-rectangle)
+                  (goto-char (point-min))
+                  (if (re-search-forward "[^[:digit:][:space:]\.]" nil t) current 0)))))
